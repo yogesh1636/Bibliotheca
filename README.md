@@ -1,1 +1,1 @@
-https://km-kurisu.github.io/Bibliotheca/
+https://github.com/yogesh1636/Bibliotheca
