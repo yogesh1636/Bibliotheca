@@ -1,0 +1,86 @@
+[
+  {
+    "title": "SAO Alicitization",
+    "author": "Reki Kawahara",
+    "price": 599,
+    "category": "fiction",
+    "image": "/public/covers/SAOAlici.jpeg"
+  },
+  {
+    "title": "Harry Potter and the Philosopher's Stone",
+    "author": "J.K. Rowling",
+    "price": 749,
+    "category": "fantasy",
+    "image": "/public/covers/harryphilosophergryff.jpg"
+  },
+  {
+    "title": "Harry Potter and the Chambers of Secrets",
+    "author": "J.K. Rowling",
+    "price": 699,
+    "category": "fantasy",
+    "image": "/public/covers/harrychamberslyther.jpg"
+  },
+  {
+    "title": "Harry Potter and the Order of the Phoenix",
+    "author": "J.K. Rowling",
+    "price": 789,
+    "category": "fantasy",
+    "image": "/public/covers/harrypheonixraven.jpg"
+  },
+  {
+    "title": "It Ends with Us",
+    "author": "Colleen Hoover",
+    "price": 799,
+    "category": "romance",
+    "image": "/public/covers/itendswihtus.jpg"
+  },
+  {
+    "title": "It Starts with Us",
+    "author": "Colleen Hoover",
+    "price": 699,
+    "category": "romance",
+    "image": "/public/covers/itstartswithus.jpeg"
+  },
+  {
+    "title": "Out",
+    "author": "Natsuo Kirino",
+    "price": 599,
+    "category": "horror",
+    "image": "/public/covers/out.jpeg"
+  },
+  {
+    "title": "Harry Potter and the Deathly Hallows",
+    "author": "J.K. Rowling",
+    "price": 789,
+    "category": "fantasy",
+    "image": "/public/covers/harryhallowsgryffin.jpg"
+  },
+  {
+    "title": "The Wind up bird Chronicle",
+    "author": "haruki Murakami",
+    "price": 749,
+    "category": "selfhelp",
+    "image": "/public/covers/thewindupbird.png"
+  },
+  {
+    "title": "Harry Potter and the goblet of fire",
+    "author": "J.K. Rowling",
+    "price": 699,
+    "category": "fantasy",
+    "image": "/public/covers/harrygoblethuffle.jpg"
+  },
+  {
+    "title": "harry potter and the half blood prince",
+    "author": "J.K. Rowling",
+    "price": 599,
+    "category": "fiction",
+    "image": "/public/covers/harryhalfslytherin.jpg"
+  },
+  {
+    "title": "harry potter and the prisoner of azkaban",
+    "author": "J.K. Rowling",
+    "price": 749,
+    "category": "fantasy",
+    "image": "/public/covers/harryprisonerhufflepu.jpg"
+  }
+]
