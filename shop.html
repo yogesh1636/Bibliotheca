@@ -59,6 +59,11 @@
   class="max-w-6xl mx-auto px-4 pb-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
 </section>
 
+<div id="toast"
+  class="fixed bottom-6 right-6 bg-indigo-600 text-white px-4 py-2 rounded shadow hidden">
+  Added to cart
+</div>
+
 <footer class="bg-gray-100 text-center py-6 text-gray-600 mt-12">
   © 2025 Bibliotheca.
 </footer>
@@ -69,14 +74,14 @@ function toggleMenu() {
 }
 
 const allBooks = [
-  {title:"Bakemonogatari",author:"Nisio Isin",price:499,category:"manga",image:"covers/bakemonogatari.jpeg"},
+  {title:"Bakemonogatari",author:"Nisio Isin",price:499,category:"manga",image:"covers/bakemonogatari.jpeg",tag:"NEW"},
   {title:"Classroom of the Elite",author:"Syougo Kinugasa",price:399,category:"fiction",image:"covers/classroomofelites.png"},
   {title:"It Starts With Us",author:"Colleen Hoover",price:299,category:"romance",image:"covers/itstartswithus.jpeg"},
   {title:"No Longer Human",author:"Osamu Dazai",price:349,category:"fiction",image:"covers/nolongerhuman.jpeg"},
   {title:"Out",author:"Natsuo Kirino",price:399,category:"fiction",image:"covers/out.jpeg"},
   {title:"The Wind-Up Bird Chronicle",author:"Haruki Murakami",price:599,category:"fiction",image:"covers/thewindupbird.png"},
   {title:"Sword Art Online: Alicization",author:"Reki Kawahara",price:599,category:"fantasy",image:"covers/SAOAlici.jpeg"},
-  {title:"Harry Potter and the Philosopher's Stone",author:"J.K. Rowling",price:749,category:"fantasy",image:"covers/harryphilosophergryff.jpg"},
+  {title:"Harry Potter and the Philosopher's Stone",author:"J.K. Rowling",price:749,category:"fantasy",image:"covers/harryphilosophergryff.jpg",tag:"POPULAR"},
   {title:"Harry Potter and the Chamber of Secrets",author:"J.K. Rowling",price:699,category:"fantasy",image:"covers/harrychamberslyther.jpg"},
   {title:"Harry Potter and the Prisoner of Azkaban",author:"J.K. Rowling",price:749,category:"fantasy",image:"covers/harryprisonerhufflepu.jpg"},
   {title:"Harry Potter and the Goblet of Fire",author:"J.K. Rowling",price:699,category:"fantasy",image:"covers/harrygoblethuffle.jpg"},
@@ -85,7 +90,7 @@ const allBooks = [
   {title:"Harry Potter and the Deathly Hallows",author:"J.K. Rowling",price:789,category:"fantasy",image:"covers/harryhallowsgryffin.jpg"},
   {title:"The Climber",author:"Shinichi Sakamoto",price:649,category:"manga",image:"covers/theclimber.png"},
   {title:"Berserk",author:"Kentaro Miura",price:799,category:"manga",image:"covers/berserk.jpg"},
-  {title:"Atomic Habits",author:"James Clear",price:499,category:"selfhelp",image:"covers/atomichabits.jpg"},
+  {title:"Atomic Habits",author:"James Clear",price:499,category:"selfhelp",image:"covers/atomichabits.jpg",tag:"POPULAR"},
   {title:"Ikigai",author:"Hector Garcia",price:349,category:"selfhelp",image:"covers/ikigai.jpg"},
   {title:"The Alchemist",author:"Paulo Coelho",price:399,category:"fiction",image:"covers/thealchemist.jpg"},
   {title:"Gone Girl",author:"Gillian Flynn",price:459,category:"fiction",image:"covers/gonegirl.jpg"}
@@ -103,14 +108,10 @@ function addToCart(book) {
   cart.push(book);
   localStorage.setItem("cart", JSON.stringify(cart));
   updateCartCount();
-}
 
-function toggleWishlist(title) {
-  let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
-  wishlist = wishlist.includes(title)
-    ? wishlist.filter(t => t !== title)
-    : [...wishlist, title];
-  localStorage.setItem("wishlist", JSON.stringify(wishlist));
+  const toast = document.getElementById("toast");
+  toast.classList.remove("hidden");
+  setTimeout(() => toast.classList.add("hidden"), 1500);
 }
 
 function renderBooks(books) {
@@ -118,18 +119,18 @@ function renderBooks(books) {
   grid.innerHTML = "";
   books.forEach(book => {
     grid.innerHTML += `
-      <div class="group relative border rounded shadow overflow-hidden">
-        <img src="${book.image}" class="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105">
-        <div class="absolute inset-0 bg-black/70 text-white p-4 flex flex-col justify-end transform translate-y-full group-hover:translate-y-0 transition-all duration-300">
-          <h3 class="text-lg font-semibold">${book.title}</h3>
-          <p class="text-sm opacity-90">by ${book.author}</p>
-          <p class="mt-2 font-bold text-indigo-300">₹${book.price}</p>
-          <div class="flex gap-2 mt-3">
-            <button onclick='addToCart(${JSON.stringify(book)})' class="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700">Add</button>
-            <button onclick='toggleWishlist("${book.title}")' class="bg-white/20 px-4 py-2 rounded">❤</button>
-          </div>
-        </div>
-      </div>`;
+      <div class="relative border rounded shadow p-4 text-center transition transform hover:-translate-y-1 hover:shadow-lg">
+        ${book.tag ? `<span class="absolute top-2 left-2 bg-indigo-600 text-white text-xs px-2 py-1 rounded">${book.tag}</span>` : ""}
+        <img src="${book.image}" class="w-full h-64 object-cover mb-4 rounded">
+        <h3 class="text-lg font-semibold">${book.title}</h3>
+        <p class="text-sm text-gray-500">by ${book.author}</p>
+        <p class="mt-2 font-bold text-indigo-700">₹${book.price}</p>
+        <button onclick='addToCart(${JSON.stringify(book)})'
+          class="mt-3 bg-indigo-600 px-4 py-2 rounded text-white hover:bg-indigo-700">
+          Add to Cart
+        </button>
+      </div>
+    `;
   });
 }
 
