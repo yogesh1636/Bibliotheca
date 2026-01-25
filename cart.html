@@ -9,7 +9,7 @@
 </head>
 <body class="bg-white text-gray-800 font-sans">
 
-  <!-- Header -->
+
   <header class="bg-white shadow-md sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 flex justify-between items-center h-16">
       <h1 class="text-2xl font-bold text-indigo-600">Bibliotheca.</h1>
@@ -30,7 +30,7 @@
     </div>
   </header>
 
-  <!-- Cart Items -->
+ 
   <main class="max-w-4xl mx-auto px-2 sm:px-4 py-10">
     <h2 class="text-2xl font-bold mb-6 text-center sm:text-left">Your Shopping Cart</h2>
     <ul id="cart-items" class="space-y-4"></ul>
@@ -41,12 +41,11 @@
     <div class="mt-4 text-center sm:text-right">
       <a href="payment.html" class="w-full sm:w-auto inline-block bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 font-semibold transition">Checkout & Pay</a>
     </div>
-    <!-- Order Receipt Modal -->
-    <!-- (Remove the modal code, as payment.html/receipt.html now handle receipts) -->
+   
   </main>
 
   <script>
-    // Remove the modal checkout JS code, as payment.html/receipt.html now handle receipts
+   
     function renderCart() {
       const items = JSON.parse(localStorage.getItem("cart")) || [];
       const cartItemsEl = document.getElementById("cart-items");
@@ -61,7 +60,7 @@
                         <button onclick="removeFromCart(${index})" class="text-red-600 hover:underline">Remove</button>`;
         cartItemsEl.appendChild(li);
       });
-      // Apply 30% discount
+    
       const discountedTotal = total * 0.7;
       if (totalAmountEl) {
         totalAmountEl.textContent = discountedTotal.toFixed(2);
