@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shop | Bibliotheca.</title>
+  <title>Shop | WebReader</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 
 <body class="bg-white text-gray-800 font-sans">
 
 <header class="bg-white shadow-md sticky top-0 z-50">
   <div class="max-w-7xl mx-auto px-4 flex justify-between items-center h-16">
-    <h1 class="text-2xl font-bold text-indigo-600">Bibliotheca.</h1>
+    <h1 class="text-2xl font-bold text-indigo-600">WebReader</h1>
 
     <nav class="hidden md:flex gap-6 text-gray-700 font-medium items-center">
       <a href="index.html" class="hover:text-indigo-600">Home</a>
@@ -22,12 +23,19 @@
       </a>
     </nav>
 
-    <div class="md:hidden relative">
-      <button onclick="toggleMenu()" class="text-xl">☰</button>
-      <div id="mobileMenu" class="hidden absolute right-0 mt-2 w-40 bg-white border rounded shadow">
-        <a href="index.html" class="block px-4 py-2 hover:bg-indigo-50">Home</a>
-        <a href="shop.html" class="block px-4 py-2 hover:bg-indigo-50">Shop</a>
-        <a href="cart.html" class="block px-4 py-2 hover:bg-indigo-50">Cart</a>
+    <div class="flex items-center gap-4">
+      <button id="authBtn" onclick="showAuthModal()" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+        Sign In
+      </button>
+      <div id="userMenu" class="hidden"></div>
+      
+      <div class="md:hidden relative">
+        <button onclick="toggleMenu()" class="text-xl">☰</button>
+        <div id="mobileMenu" class="hidden absolute right-0 mt-2 w-40 bg-white border rounded shadow">
+          <a href="index.html" class="block px-4 py-2 hover:bg-indigo-50">Home</a>
+          <a href="shop.html" class="block px-4 py-2 hover:bg-indigo-50">Shop</a>
+          <a href="cart.html" class="block px-4 py-2 hover:bg-indigo-50">Cart</a>
+        </div>
       </div>
     </div>
   </div>
@@ -47,11 +55,10 @@
 
   <div class="flex flex-wrap gap-4 justify-center mb-8">
     <button class="category-btn bg-indigo-200 font-bold px-4 py-2 rounded" data-category="all">All</button>
-    <button class="category-btn bg-indigo-100 px-4 py-2 rounded" data-category="fiction">Fiction</button>
-    <button class="category-btn bg-indigo-100 px-4 py-2 rounded" data-category="fantasy">Fantasy</button>
-    <button class="category-btn bg-indigo-100 px-4 py-2 rounded" data-category="romance">Romance</button>
-    <button class="category-btn bg-indigo-100 px-4 py-2 rounded" data-category="manga">Manga / Manhwa</button>
-    <button class="category-btn bg-indigo-100 px-4 py-2 rounded" data-category="selfhelp">Self Help</button>
+    <button class="category-btn bg-indigo-100 px-4 py-2 rounded" data-category="Fiction">Fiction</button>
+    <button class="category-btn bg-indigo-100 px-4 py-2 rounded" data-category="Fantasy">Fantasy</button>
+    <button class="category-btn bg-indigo-100 px-4 py-2 rounded" data-category="Romance">Romance</button>
+    <button class="category-btn bg-indigo-100 px-4 py-2 rounded" data-category="Sci-Fi">Sci-Fi</button>
   </div>
 </section>
 
@@ -60,73 +67,217 @@
 </section>
 
 <div id="toast"
-  class="fixed bottom-6 right-6 bg-indigo-600 text-white px-4 py-2 rounded shadow hidden">
+  class="fixed bottom-6 right-6 bg-indigo-600 text-white px-4 py-2 rounded shadow hidden transition-all duration-300">
   Added to cart
 </div>
 
+<!-- Toast Container -->
+<div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
 <footer class="bg-gray-100 text-center py-6 text-gray-600 mt-12">
-  © 2025 Bibliotheca.
+  © 2025 WebReader
 </footer>
 
+<!-- Authentication Modal -->
+<div id="authModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white p-8 rounded-lg max-w-md w-full mx-4">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold text-indigo-800">Welcome to WebReader</h2>
+      <button onclick="hideAuthModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+    </div>
+    
+    <!-- Sign In Form -->
+    <form id="signInForm" onsubmit="handleSignIn(event)">
+      <h3 class="text-lg font-semibold mb-4">Sign In</h3>
+      <input type="email" id="signInEmail" placeholder="Email" required class="w-full p-3 border rounded mb-3">
+      <input type="password" id="signInPassword" placeholder="Password" required class="w-full p-3 border rounded mb-4">
+      <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded hover:bg-indigo-700">Sign In</button>
+      <p class="text-center mt-4 text-gray-600">
+        Don't have an account? 
+        <button type="button" onclick="toggleAuthMode()" class="text-indigo-600 hover:underline">Sign Up</button>
+      </p>
+    </form>
+    
+    <!-- Sign Up Form -->
+    <form id="signUpForm" class="hidden" onsubmit="handleSignUp(event)">
+      <h3 class="text-lg font-semibold mb-4">Create Account</h3>
+      <input type="text" id="signUpName" placeholder="Full Name" required class="w-full p-3 border rounded mb-3">
+      <input type="email" id="signUpEmail" placeholder="Email" required class="w-full p-3 border rounded mb-3">
+      <input type="password" id="signUpPassword" placeholder="Password" required class="w-full p-3 border rounded mb-4">
+      <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded hover:bg-indigo-700">Sign Up</button>
+      <p class="text-center mt-4 text-gray-600">
+        Already have an account? 
+        <button type="button" onclick="toggleAuthMode()" class="text-indigo-600 hover:underline">Sign In</button>
+      </p>
+    </form>
+  </div>
+</div>
+
+<script src="supabase-config.js"></script>
+<script src="auth.js"></script>
+<script src="database.js"></script>
 <script>
+// Toast notification system
+function showToast(message, type = 'info', duration = 3000) {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  
+  const colors = {
+    success: 'bg-green-500',
+    error: 'bg-red-500',
+    warning: 'bg-yellow-500',
+    info: 'bg-indigo-600'
+  };
+  
+  toast.className = `${colors[type]} text-white px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full opacity-0`;
+  toast.innerHTML = `
+    <div class="flex items-center justify-between">
+      <span>${message}</span>
+      <button onclick="this.parentElement.parentElement.remove()" class="ml-3 text-white hover:text-gray-200">
+        ×
+      </button>
+    </div>
+  `;
+  
+  container.appendChild(toast);
+  
+  // Animate in
+  setTimeout(() => {
+    toast.classList.remove('translate-x-full', 'opacity-0');
+  }, 100);
+  
+  // Auto remove
+  setTimeout(() => {
+    toast.classList.add('translate-x-full', 'opacity-0');
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
 function toggleMenu() {
   document.getElementById('mobileMenu').classList.toggle('hidden');
 }
 
-const allBooks = [
-  {title:"Bakemonogatari",author:"Nisio Isin",price:499,category:"manga",image:"covers/bakemonogatari.jpeg",tag:"NEW"},
-  {title:"Classroom of the Elite",author:"Syougo Kinugasa",price:399,category:"fiction",image:"covers/classroomofelites.png"},
-  {title:"It Starts With Us",author:"Colleen Hoover",price:299,category:"romance",image:"covers/itstartswithus.jpeg"},
-  {title:"No Longer Human",author:"Osamu Dazai",price:349,category:"fiction",image:"covers/nolongerhuman.jpeg"},
-  {title:"Out",author:"Natsuo Kirino",price:399,category:"fiction",image:"covers/out.jpeg"},
-  {title:"The Wind-Up Bird Chronicle",author:"Haruki Murakami",price:599,category:"fiction",image:"covers/thewindupbird.png"},
-  {title:"Sword Art Online: Alicization",author:"Reki Kawahara",price:599,category:"fantasy",image:"covers/SAOAlici.jpeg"},
-  {title:"Harry Potter and the Philosopher's Stone",author:"J.K. Rowling",price:749,category:"fantasy",image:"covers/harryphilosophergryff.jpg",tag:"POPULAR"},
-  {title:"Harry Potter and the Chamber of Secrets",author:"J.K. Rowling",price:699,category:"fantasy",image:"covers/harrychamberslyther.jpg"},
-  {title:"Harry Potter and the Prisoner of Azkaban",author:"J.K. Rowling",price:749,category:"fantasy",image:"covers/harryprisonerhufflepu.jpg"},
-  {title:"Harry Potter and the Goblet of Fire",author:"J.K. Rowling",price:699,category:"fantasy",image:"covers/harrygoblethuffle.jpg"},
-  {title:"Harry Potter and the Order of the Phoenix",author:"J.K. Rowling",price:789,category:"fantasy",image:"covers/harrypheonixraven.jpg"},
-  {title:"Harry Potter and the Half-Blood Prince",author:"J.K. Rowling",price:599,category:"fantasy",image:"covers/harryhalfslytherin.jpg"},
-  {title:"Harry Potter and the Deathly Hallows",author:"J.K. Rowling",price:789,category:"fantasy",image:"covers/harryhallowsgryffin.jpg"},
-  {title:"The Climber",author:"Shinichi Sakamoto",price:649,category:"manga",image:"covers/theclimber.png"},
-  {title:"Berserk",author:"Kentaro Miura",price:799,category:"manga",image:"covers/berserk.jpg"},
-  {title:"Atomic Habits",author:"James Clear",price:499,category:"selfhelp",image:"covers/atomichabits.jpg",tag:"POPULAR"},
-  {title:"Ikigai",author:"Hector Garcia",price:349,category:"selfhelp",image:"covers/ikigai.jpg"},
-  {title:"The Alchemist",author:"Paulo Coelho",price:399,category:"fiction",image:"covers/thealchemist.jpg"},
-  {title:"Gone Girl",author:"Gillian Flynn",price:459,category:"fiction",image:"covers/gonegirl.jpg"}
-];
+let allBooks = [];
+let currentBooks = [];
 
-let currentBooks = [...allBooks];
-
-function updateCartCount() {
-  const cart = JSON.parse(localStorage.getItem("cart")) || [];
-  document.getElementById("cartCount").innerText = cart.length;
+async function loadBooks() {
+  try {
+    if (!supabaseClient) {
+      loadFallbackBooks();
+      return;
+    }
+    
+    allBooks = await db.getBooks();
+    if (allBooks && allBooks.length > 0) {
+      currentBooks = [...allBooks];
+      renderBooks(currentBooks);
+    } else {
+      loadFallbackBooks();
+    }
+  } catch (error) {
+    showToast('⚠️ Using offline book catalog', 'warning');
+    loadFallbackBooks();
+  }
 }
 
-function addToCart(book) {
-  const cart = JSON.parse(localStorage.getItem("cart")) || [];
-  cart.push(book);
-  localStorage.setItem("cart", JSON.stringify(cart));
-  updateCartCount();
+function loadFallbackBooks() {
+  allBooks = [
+    {id: '1', title: 'Bakemonogatari', author: 'Nisio Isin', price: 499, cover_image: './covers/bakemonogatari.jpeg', category: 'Fiction', featured: true},
+    {id: '2', title: 'Classroom of the Elite', author: 'Syougo Kinugasa', price: 399, cover_image: 'covers/classroomofelites.png', category: 'Fiction', featured: true},
+    {id: '3', title: 'It Starts With Us', author: 'Colleen Hoover', price: 299, cover_image: 'covers/itstartswithus.jpeg', category: 'Romance', featured: true},
+    {id: '4', title: 'No Longer Human', author: 'Osamu Dazai', price: 349, cover_image: 'covers/nolongerhuman.jpeg', category: 'Fiction', featured: false},
+    {id: '5', title: 'Out', author: 'Natsuo Kirino', price: 399, cover_image: 'covers/out.jpeg', category: 'Fiction', featured: false},
+    {id: '6', title: 'The Wind-Up Bird Chronicle', author: 'Haruki Murakami', price: 599, cover_image: 'covers/thewindupbird.png', category: 'Fiction', featured: true}
+  ];
+  currentBooks = [...allBooks];
+  renderBooks(currentBooks);
+}
 
-  const toast = document.getElementById("toast");
-  toast.classList.remove("hidden");
-  setTimeout(() => toast.classList.add("hidden"), 1500);
+async function updateCartCount() {
+  if (!supabaseClient) {
+    // Fallback to localStorage
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    document.getElementById('cartCount').innerText = cart.length;
+    return;
+  }
+  
+  if (!auth.user) {
+    document.getElementById('cartCount').innerText = '0';
+    return;
+  }
+  
+  try {
+    const cartItems = await db.getCart(auth.user.id);
+    document.getElementById('cartCount').innerText = cartItems.length;
+  } catch (error) {
+    console.error('Error updating cart count:', error);
+    document.getElementById('cartCount').innerText = '0';
+  }
+}
+
+async function addToCart(bookId) {
+  if (!supabaseClient) {
+    // Fallback to localStorage for demo
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const book = allBooks.find(b => b.id === bookId);
+    if (book) {
+      cart.push({name: book.title, price: book.price});
+      localStorage.setItem('cart', JSON.stringify(cart));
+      
+      showToast(`✅ ${book.title} added to cart!`, 'success');
+      updateCartCount();
+    }
+    return;
+  }
+  
+  if (!auth.user) {
+    showAuthModal();
+    return;
+  }
+  
+  try {
+    await db.addToCart(auth.user.id, bookId);
+    await updateCartCount();
+    
+    const book = allBooks.find(b => b.id === bookId);
+    showToast(`✅ ${book?.title || 'Book'} added to cart!`, 'success');
+  } catch (error) {
+    console.error('Error adding to cart:', error);
+    showToast('❌ Error adding item to cart', 'error');
+  }
 }
 
 function renderBooks(books) {
-  const grid = document.getElementById("productGrid");
-  grid.innerHTML = "";
+  const grid = document.getElementById('productGrid');
+  grid.innerHTML = '';
+  
   books.forEach(book => {
+    const discountBadge = book.discount_percentage > 0 ? 
+      `<span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">${book.discount_percentage}% OFF</span>` : '';
+    
+    const featuredBadge = book.featured ? 
+      `<span class="absolute top-2 right-2 bg-indigo-600 text-white text-xs px-2 py-1 rounded">FEATURED</span>` : '';
+    
+    const priceDisplay = book.original_price ? 
+      `<div class="mt-2">
+        <span class="text-gray-400 line-through text-sm">₹${book.original_price}</span>
+        <p class="font-bold text-indigo-700">₹${book.price}</p>
+      </div>` : 
+      `<p class="mt-2 font-bold text-indigo-700">₹${book.price}</p>`;
+    
     grid.innerHTML += `
       <div class="relative border rounded shadow p-4 text-center transition transform hover:-translate-y-1 hover:shadow-lg">
-        ${book.tag ? `<span class="absolute top-2 left-2 bg-indigo-600 text-white text-xs px-2 py-1 rounded">${book.tag}</span>` : ""}
-        <img src="${book.image}" class="w-full h-64 object-cover mb-4 rounded">
+        ${discountBadge}
+        ${featuredBadge}
+        <img src="${book.cover_image}" 
+             class="w-full h-64 object-cover mb-4 rounded" 
+             onerror="this.src='covers/placeholder.jpg'; this.onerror=null;"
+             loading="lazy">
         <h3 class="text-lg font-semibold">${book.title}</h3>
         <p class="text-sm text-gray-500">by ${book.author}</p>
-        <p class="mt-2 font-bold text-indigo-700">₹${book.price}</p>
-        <button onclick='addToCart(${JSON.stringify(book)})'
-          class="mt-3 bg-indigo-600 px-4 py-2 rounded text-white hover:bg-indigo-700">
+        ${priceDisplay}
+        <button onclick="addToCart('${book.id}')"
+          class="mt-3 bg-indigo-600 px-4 py-2 rounded text-white hover:bg-indigo-700 transition">
           Add to Cart
         </button>
       </div>
@@ -134,10 +285,8 @@ function renderBooks(books) {
   });
 }
 
-renderBooks(allBooks);
-updateCartCount();
-
-document.getElementById("searchInput").oninput = e => {
+// Search functionality
+document.getElementById('searchInput').oninput = e => {
   const q = e.target.value.toLowerCase();
   currentBooks = allBooks.filter(b =>
     b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q)
@@ -145,20 +294,42 @@ document.getElementById("searchInput").oninput = e => {
   renderBooks(currentBooks);
 };
 
-document.getElementById("sortSelect").onchange = e => {
-  if (e.target.value === "low") currentBooks.sort((a,b)=>a.price-b.price);
-  if (e.target.value === "high") currentBooks.sort((a,b)=>b.price-a.price);
+// Sort functionality
+document.getElementById('sortSelect').onchange = e => {
+  if (e.target.value === 'low') currentBooks.sort((a,b) => a.price - b.price);
+  if (e.target.value === 'high') currentBooks.sort((a,b) => b.price - a.price);
   renderBooks(currentBooks);
 };
 
-document.querySelectorAll(".category-btn").forEach(btn => {
+// Category filter
+document.querySelectorAll('.category-btn').forEach(btn => {
   btn.onclick = () => {
-    document.querySelectorAll(".category-btn").forEach(b=>b.classList.remove("bg-indigo-200","font-bold"));
-    btn.classList.add("bg-indigo-200","font-bold");
+    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('bg-indigo-200','font-bold'));
+    btn.classList.add('bg-indigo-200','font-bold');
     const cat = btn.dataset.category;
-    currentBooks = cat==="all" ? [...allBooks] : allBooks.filter(b=>b.category===cat);
+    currentBooks = cat === 'all' ? [...allBooks] : allBooks.filter(b => b.category === cat);
     renderBooks(currentBooks);
   };
+});
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof supabaseClient === 'undefined') {
+    setTimeout(() => {
+      loadBooks();
+      setTimeout(updateCartCount, 100);
+    }, 500);
+  } else {
+    loadBooks();
+    setTimeout(updateCartCount, 100);
+  }
+});
+
+// Listen for auth changes
+supabaseClient.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+    setTimeout(updateCartCount, 100);
+  }
 });
 </script>
 

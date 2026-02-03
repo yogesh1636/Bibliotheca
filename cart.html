@@ -3,28 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cart | Bibliotheca.</title>
+  <title>Cart | WebReader</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script defer src="scripts.js"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-white text-gray-800 font-sans">
 
 
   <header class="bg-white shadow-md sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 flex justify-between items-center h-16">
-      <h1 class="text-2xl font-bold text-indigo-600">Bibliotheca.</h1>
+      <h1 class="text-2xl font-bold text-indigo-600">WebReader</h1>
       <nav class="hidden md:flex gap-6 text-gray-700 font-medium">
         <a href="index.html" class="hover:text-indigo-600">Home</a>
         <a href="shop.html" class="hover:text-indigo-600">Shop</a>
         <a href="cart.html" class="hover:text-indigo-600">Cart</a>
       </nav>
-      <div class="md:hidden relative">
-        <button onclick="toggleMenu()" class="text-gray-600 text-xl">☰</button>
-        <div id="mobileMenu" class="hidden absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-          <a href="index.html" class="block px-4 py-2 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600">Home</a>
-          <a href="shop.html" class="block px-4 py-2 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600">Shop</a>
-          <a href="cart.html" class="block px-4 py-2 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600">Cart</a>
-          <a href="payment.html" class="block px-4 py-2 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600">Payments</a>
+      
+      <div class="flex items-center gap-4">
+        <button id="authBtn" onclick="showAuthModal()" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+          Sign In
+        </button>
+        <div id="userMenu" class="hidden"></div>
+        
+        <div class="md:hidden relative">
+          <button onclick="toggleMenu()" class="text-gray-600 text-xl">☰</button>
+          <div id="mobileMenu" class="hidden absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+            <a href="index.html" class="block px-4 py-2 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600">Home</a>
+            <a href="shop.html" class="block px-4 py-2 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600">Shop</a>
+            <a href="cart.html" class="block px-4 py-2 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600">Cart</a>
+          </div>
         </div>
       </div>
     </div>
@@ -32,40 +39,192 @@
 
  
   <main class="max-w-4xl mx-auto px-2 sm:px-4 py-10">
-    <h2 class="text-2xl font-bold mb-6 text-center sm:text-left">Your Shopping Cart</h2>
-    <ul id="cart-items" class="space-y-4"></ul>
-    <div class="mt-6 text-right font-semibold text-xl">
-      <span class="block text-base text-gray-500 mb-1">30% Discount Applied</span>
-      Total: ₹<span id="total-amount">0.00</span>
+    <!-- Auth Required Message -->
+    <div id="authRequired" class="hidden text-center py-16">
+      <div class="bg-indigo-50 p-8 rounded-lg">
+        <h2 class="text-2xl font-bold text-indigo-800 mb-4">Sign In Required</h2>
+        <p class="text-gray-600 mb-6">Please sign in to view your cart and save items across sessions.</p>
+        <button onclick="showAuthModal()" class="bg-indigo-600 text-white px-6 py-3 rounded hover:bg-indigo-700">
+          Sign In Now
+        </button>
+      </div>
     </div>
-    <div class="mt-4 text-center sm:text-right">
-      <a href="payment.html" class="w-full sm:w-auto inline-block bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 font-semibold transition">Checkout & Pay</a>
+    
+    <!-- Cart Content -->
+    <div id="cartContent">
+      <h2 class="text-2xl font-bold mb-6 text-center sm:text-left">Your Shopping Cart</h2>
+      
+      <!-- Empty Cart Message -->
+      <div id="emptyCart" class="hidden text-center py-16">
+        <div class="bg-gray-50 p-8 rounded-lg">
+          <h3 class="text-xl font-semibold text-gray-800 mb-4">Your cart is empty</h3>
+          <p class="text-gray-600 mb-6">Discover amazing books in our collection!</p>
+          <a href="shop.html" class="bg-indigo-600 text-white px-6 py-3 rounded hover:bg-indigo-700">
+            Browse Books
+          </a>
+        </div>
+      </div>
+      
+      <ul id="cart-items" class="space-y-4"></ul>
+      
+      <div id="cartSummary" class="mt-6 text-right font-semibold text-xl hidden">
+        <span class="block text-base text-gray-500 mb-1">30% Discount Applied</span>
+        Total: ₹<span id="total-amount">0.00</span>
+      </div>
+      
+      <div id="checkoutBtn" class="mt-4 text-center sm:text-right hidden">
+        <button onclick="proceedToCheckout()" class="w-full sm:w-auto bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 font-semibold transition">
+          Checkout & Pay
+        </button>
+      </div>
     </div>
-   
   </main>
 
+  <!-- Authentication Modal -->
+  <div id="authModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-8 rounded-lg max-w-md w-full mx-4">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-indigo-800">Welcome to WebReader</h2>
+        <button onclick="hideAuthModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+      </div>
+      
+      <!-- Sign In Form -->
+      <form id="signInForm" onsubmit="handleSignIn(event)">
+        <h3 class="text-lg font-semibold mb-4">Sign In</h3>
+        <input type="email" id="signInEmail" placeholder="Email" required class="w-full p-3 border rounded mb-3">
+        <input type="password" id="signInPassword" placeholder="Password" required class="w-full p-3 border rounded mb-4">
+        <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded hover:bg-indigo-700">Sign In</button>
+        <p class="text-center mt-4 text-gray-600">
+          Don't have an account? 
+          <button type="button" onclick="toggleAuthMode()" class="text-indigo-600 hover:underline">Sign Up</button>
+        </p>
+      </form>
+      
+      <!-- Sign Up Form -->
+      <form id="signUpForm" class="hidden" onsubmit="handleSignUp(event)">
+        <h3 class="text-lg font-semibold mb-4">Create Account</h3>
+        <input type="text" id="signUpName" placeholder="Full Name" required class="w-full p-3 border rounded mb-3">
+        <input type="email" id="signUpEmail" placeholder="Email" required class="w-full p-3 border rounded mb-3">
+        <input type="password" id="signUpPassword" placeholder="Password" required class="w-full p-3 border rounded mb-4">
+        <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded hover:bg-indigo-700">Sign Up</button>
+        <p class="text-center mt-4 text-gray-600">
+          Already have an account? 
+          <button type="button" onclick="toggleAuthMode()" class="text-indigo-600 hover:underline">Sign In</button>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <script src="supabase-config.js"></script>
+  <script src="auth.js"></script>
+  <script src="database.js"></script>
   <script>
-   
-    function renderCart() {
-      const items = JSON.parse(localStorage.getItem("cart")) || [];
-      const cartItemsEl = document.getElementById("cart-items");
-      const totalAmountEl = document.getElementById("total-amount");
-      let total = 0;
-      cartItemsEl.innerHTML = "";
-      items.forEach((item, index) => {
-        total += item.price;
-        const li = document.createElement("li");
-        li.className = "flex justify-between items-center p-4 bg-gray-100 rounded";
-        li.innerHTML = `<span>${item.name} - ₹${item.price.toFixed(2)}</span>
-                        <button onclick="removeFromCart(${index})" class="text-red-600 hover:underline">Remove</button>`;
-        cartItemsEl.appendChild(li);
-      });
+    let cartItems = [];
     
-      const discountedTotal = total * 0.7;
-      if (totalAmountEl) {
-        totalAmountEl.textContent = discountedTotal.toFixed(2);
+    function toggleMenu() {
+      document.getElementById('mobileMenu').classList.toggle('hidden');
+    }
+    
+    async function loadCart() {
+      if (!auth.user) {
+        document.getElementById('authRequired').classList.remove('hidden');
+        document.getElementById('cartContent').classList.add('hidden');
+        return;
+      }
+      
+      document.getElementById('authRequired').classList.add('hidden');
+      document.getElementById('cartContent').classList.remove('hidden');
+      
+      try {
+        cartItems = await db.getCart(auth.user.id);
+        renderCart();
+      } catch (error) {
+        console.error('Error loading cart:', error);
       }
     }
+    
+    function renderCart() {
+      const cartItemsEl = document.getElementById('cart-items');
+      const totalAmountEl = document.getElementById('total-amount');
+      const emptyCart = document.getElementById('emptyCart');
+      const cartSummary = document.getElementById('cartSummary');
+      const checkoutBtn = document.getElementById('checkoutBtn');
+      
+      if (cartItems.length === 0) {
+        emptyCart.classList.remove('hidden');
+        cartSummary.classList.add('hidden');
+        checkoutBtn.classList.add('hidden');
+        cartItemsEl.innerHTML = '';
+        return;
+      }
+      
+      emptyCart.classList.add('hidden');
+      cartSummary.classList.remove('hidden');
+      checkoutBtn.classList.remove('hidden');
+      
+      let total = 0;
+      cartItemsEl.innerHTML = '';
+      
+      cartItems.forEach((item) => {
+        total += item.books.price * item.quantity;
+        const li = document.createElement('li');
+        li.className = 'flex justify-between items-center p-4 bg-gray-100 rounded';
+        li.innerHTML = `
+          <div class="flex items-center gap-4">
+            <img src="${item.books.cover_image}" alt="${item.books.title}" class="w-16 h-20 object-cover rounded">
+            <div>
+              <h4 class="font-semibold">${item.books.title}</h4>
+              <p class="text-sm text-gray-500">by ${item.books.author}</p>
+              <p class="text-indigo-700 font-bold">₹${item.books.price}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-gray-600">Qty: ${item.quantity}</span>
+            <button onclick="removeFromCart('${item.book_id}')" class="text-red-600 hover:underline ml-4">Remove</button>
+          </div>
+        `;
+        cartItemsEl.appendChild(li);
+      });
+      
+      const discountedTotal = total * 0.7;
+      totalAmountEl.textContent = discountedTotal.toFixed(2);
+    }
+    
+    async function removeFromCart(bookId) {
+      if (!auth.user) return;
+      
+      try {
+        await db.removeFromCart(auth.user.id, bookId);
+        await loadCart();
+      } catch (error) {
+        console.error('Error removing from cart:', error);
+        alert('Error removing item from cart');
+      }
+    }
+    
+    function proceedToCheckout() {
+      if (cartItems.length === 0) return;
+      
+      // Store cart data for checkout
+      localStorage.setItem('checkoutData', JSON.stringify({
+        items: cartItems,
+        total: cartItems.reduce((sum, item) => sum + (item.books.price * item.quantity), 0) * 0.7
+      }));
+      
+      window.location.href = 'payment.html';
+    }
+    
+    // Load cart when page loads and when auth state changes
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(loadCart, 100); // Small delay to ensure auth is initialized
+    });
+    
+    // Listen for auth changes
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+        setTimeout(loadCart, 100);
+      }
+    });
   </script>
 
 </body>
