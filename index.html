@@ -61,7 +61,7 @@
 <section class="w-full py-6">
   <div class="relative w-full">
     <img id="carouselImage"
-         src="carousel/bakemonogatari-gradient - Made with PosterMyWall.jpg"
+         src="covers/carousel/bakemonogatari-gradient - Made with PosterMyWall.jpg"
          class="w-full h-64 md:h-96 object-cover">
 
     <button id="prevBtn"
@@ -334,14 +334,21 @@ function toggleMenu() {
 }
 
 const images = [
-  'carousel/bakemonogatari-gradient - Made with PosterMyWall.jpg',
-  'carousel/classroomofelite-gradient - Made with PosterMyWall.jpg',
-  'carousel/itendswithus-gradient.jpg',
-  'carousel/nolongerhuman-gradient - Made with PosterMyWall.jpg'
+  'covers/carousel/bakemonogatari-gradient - Made with PosterMyWall.jpg',
+  'covers/carousel/classroomofelite-gradient - Made with PosterMyWall.jpg',
+  'covers/carousel/itendswithus-gradient.jpg',
+  'covers/carousel/nolongerhuman-gradient - Made with PosterMyWall.jpg'
 ];
 
 let index = 0;
 const img = document.getElementById('carouselImage');
+
+// Initialize first image
+if (img) {
+  img.onerror = () => {
+    img.src = 'covers/placeholder.jpg';
+  };
+}
 
 document.getElementById('nextBtn').onclick = () => {
   index = (index + 1) % images.length;
